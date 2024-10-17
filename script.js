@@ -156,6 +156,34 @@ function returnBook(index) {
     displayIssuedBooks();
 }
 
+// Book Search Functionality
+function searchBooks() {
+    const searchTerm = document.getElementById('searchBookInput').value.toLowerCase();
+    const bookCatalog = document.querySelector('#bookCatalog tbody');
+    bookCatalog.innerHTML = ''; // Clear previous content
+
+    books.forEach((book, index) => {
+        if (book.title.toLowerCase().includes(searchTerm) || 
+            book.author.toLowerCase().includes(searchTerm) || 
+            book.genre.toLowerCase().includes(searchTerm)) {
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${book.title}</td>
+                <td>${book.author}</td>
+                <td>${book.genre}</td>
+                <td>${book.year}</td>
+                <td>${book.isbn}</td>
+                <td>
+                    <button onclick="editBook(${index})">Edit</button>
+                    <button onclick="deleteBook(${index})">Delete</button>
+                </td>
+            `;
+            bookCatalog.appendChild(row);
+        }
+    });
+}
+
 // Load books, members, and issued books on page load
 window.onload = function() {
     loadBooks();
