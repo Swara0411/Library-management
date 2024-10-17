@@ -1,8 +1,36 @@
+// Arrays to store books, members, and issued books
 let books = [];
 let members = [];
 let issuedBooks = [];
 
-// Book Management
+// Load books from localStorage when the page loads
+function loadBooks() {
+    const storedBooks = localStorage.getItem('books');
+    if (storedBooks) {
+        books = JSON.parse(storedBooks);
+        displayBooks();
+    }
+}
+
+// Load members from localStorage when the page loads
+function loadMembers() {
+    const storedMembers = localStorage.getItem('members');
+    if (storedMembers) {
+        members = JSON.parse(storedMembers);
+        displayMembers();
+    }
+}
+
+// Load issued books from localStorage when the page loads
+function loadIssuedBooks() {
+    const storedIssuedBooks = localStorage.getItem('issuedBooks');
+    if (storedIssuedBooks) {
+        issuedBooks = JSON.parse(storedIssuedBooks);
+        displayIssuedBooks();
+    }
+}
+
+// Add a new book and save to localStorage
 function addBook() {
     const title = document.getElementById('bookTitle').value;
     const author = document.getElementById('bookAuthor').value;
@@ -12,13 +40,15 @@ function addBook() {
 
     const book = { title, author, genre, year, isbn };
     books.push(book);
+    localStorage.setItem('books', JSON.stringify(books)); // Save to localStorage
     displayBooks();
     clearBookForm();
 }
 
+// Display books in the table
 function displayBooks() {
     const bookCatalog = document.querySelector('#bookCatalog tbody');
-    bookCatalog.innerHTML = '';
+    bookCatalog.innerHTML = ''; // Clear previous content
 
     books.forEach((book, index) => {
         const row = document.createElement('tr');
@@ -37,28 +67,12 @@ function displayBooks() {
     });
 }
 
-function editBook(index) {
-    const book = books[index];
-    document.getElementById('bookTitle').value = book.title;
-    document.getElementById('bookAuthor').value = book.author;
-    document.getElementById('bookGenre').value = book.genre;
-    document.getElementById('bookYear').value = book.year;
-    document.getElementById('bookISBN').value = book.isbn;
-    
-    // Update and remove the old book
-    books.splice(index, 1);
-}
-
-function deleteBook(index) {
-    books.splice(index, 1);
-    displayBooks();
-}
-
+// Clear book input form
 function clearBookForm() {
     document.getElementById('bookForm').reset();
 }
 
-// Member Management
+// Add a new member and save to localStorage
 function addMember() {
     const name = document.getElementById('memberName').value;
     const email = document.getElementById('memberEmail').value;
@@ -67,13 +81,15 @@ function addMember() {
 
     const member = { name, email, phone, membershipID };
     members.push(member);
+    localStorage.setItem('members', JSON.stringify(members)); // Save to localStorage
     displayMembers();
     clearMemberForm();
 }
 
+// Display members in the table
 function displayMembers() {
     const memberList = document.querySelector('#memberList tbody');
-    memberList.innerHTML = '';
+    memberList.innerHTML = ''; // Clear previous content
 
     members.forEach((member, index) => {
         const row = document.createElement('tr');
@@ -91,167 +107,58 @@ function displayMembers() {
     });
 }
 
-function editMember(index) {
-    const member = members[index];
-    document.getElementById('memberName').value = member.name;
-    document.getElementById('memberEmail').value = member.email;
-    document.getElementById('memberPhone').value = member.phone;
-    document.getElementById('membershipID').value = member.membershipID;
-    
-    // Update and remove the old member
-    members.splice(index, 1);
-}
-
-function deleteMember(index) {
-    members.splice(index, 1);
-    displayMembers();
-}
-
+// Clear member input form
 function clearMemberForm() {
     document.getElementById('memberForm').reset();
 }
 
-// Book Issue Management
+// Issue a book and save to localStorage
 function issueBook() {
-    const memberIndex = document.getElementById('issueMember').selectedIndex - 1;
-    const bookIndex = document.getElementById('issueBook').selectedIndex - 1;
-    const dueDate = document.getElementById('dueDate').value;
+    const memberID = document.getElementById('issueMemberID').value;
+    const isbn = document.getElementById('issueBookISBN').value;
+    const issueDate = document.getElementById('issueDate').value;
 
-    if (memberIndex < 0 || bookIndex < 0 || !dueDate) {
-        alert('Please fill out all fields');
-        return;
-    }
-
-    const issue = {
-        member: members[memberIndex].name,
-        book: books[bookIndex].title,
-        issueDate: new Date().toISOString().split('T')[0],
-        dueDate: dueDate
-    };
-
-    issuedBooks.push(issue);
+    const issuedBook = { memberID, isbn, issueDate };
+    issuedBooks.push(issuedBook);
+    localStorage.setItem('issuedBooks', JSON.stringify(issuedBooks)); // Save to localStorage
     displayIssuedBooks();
+    clearIssueForm();
 }
 
+// Display issued books in the table
 function displayIssuedBooks() {
-    const issuedList = document.querySelector('#issuedBooks tbody');
-    issuedList.innerHTML = '';
+    const issuedBookList = document.querySelector('#issuedBooksList tbody');
+    issuedBookList.innerHTML = ''; // Clear previous content
 
-    issuedBooks.forEach((issue, index) => {
+    issuedBooks.forEach((issuedBook, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${issue.member}</td>
-            <td>${issue.book}</td>
-            <td>${issue.issueDate}</td>
-            <td>${issue.dueDate}</td>
+            <td>${issuedBook.memberID}</td>
+            <td>${issuedBook.isbn}</td>
+            <td>${issuedBook.issueDate}</td>
             <td>
                 <button onclick="returnBook(${index})">Return</button>
             </td>
         `;
-        issuedList.appendChild(row);
+        issuedBookList.appendChild(row);
     });
 }
 
+// Clear issue book form
+function clearIssueForm() {
+    document.getElementById('issueForm').reset();
+}
+
+// Return a book and remove from localStorage
 function returnBook(index) {
-    issuedBooks.splice(index, 1);
+    issuedBooks.splice(index, 1); // Remove book from issued list
+    localStorage.setItem('issuedBooks', JSON.stringify(issuedBooks)); // Update localStorage
     displayIssuedBooks();
 }
 
-// Search functionality
-function searchBooks() {
-    const query = document.getElementById('searchBook').value.toLowerCase();
-    const filteredBooks = books.filter(book => 
-        book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query)
-    );
-    displayFilteredBooks(filteredBooks);
-}
-
-function displayFilteredBooks(filteredBooks) {
-    const bookCatalog = document.querySelector('#bookCatalog tbody');
-    bookCatalog.innerHTML = '';
-
-    filteredBooks.forEach((book, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${book.title}</td>
-            <td>${book.author}</td>
-            <td>${book.genre}</td>
-            <td>${book.year}</td>
-            <td>${book.isbn}</td>
-            <td>
-                <button onclick="editBook(${index})">Edit</button>
-                <button onclick="deleteBook(${index})">Delete</button>
-            </td>
-        `;
-        bookCatalog.appendChild(row);
-    });
-}
-
-function searchMembers() {
-    const query = document.getElementById('searchMember').value.toLowerCase();
-    const filteredMembers = members.filter(member => 
-        member.name.toLowerCase().includes(query) ||
-        member.email.toLowerCase().includes(query)
-    );
-    displayFilteredMembers(filteredMembers);
-}
-
-function displayFilteredMembers(filteredMembers) {
-    const memberList = document.querySelector('#memberList tbody');
-    memberList.innerHTML = '';
-
-    filteredMembers.forEach((member, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${member.name}</td>
-            <td>${member.email}</td>
-            <td>${member.phone}</td>
-            <td>${member.membershipID}</td>
-            <td>
-                <button onclick="editMember(${index})">Edit</button>
-                <button onclick="deleteMember(${index})">Delete</button>
-            </td>
-        `;
-        memberList.appendChild(row);
-    });
-}
-
-// Navigation
-document.getElementById('manageBooks').addEventListener('click', () => {
-    document.getElementById('bookSection').style.display = 'block';
-    document.getElementById('memberSection').style.display = 'none';
-    document.getElementById('issueSection').style.display = 'none';
-});
-
-document.getElementById('manageMembers').addEventListener('click', () => {
-    document.getElementById('bookSection').style.display = 'none';
-    document.getElementById('memberSection').style.display = 'block';
-    document.getElementById('issueSection').style.display = 'none';
-});
-
-document.getElementById('issueBooks').addEventListener('click', () => {
-    document.getElementById('bookSection').style.display = 'none';
-    document.getElementById('memberSection').style.display = 'none';
-    document.getElementById('issueSection').style.display = 'block';
-    populateIssueForm();
-});
-
-function populateIssueForm() {
-    const memberSelect = document.getElementById('issueMember');
-    const bookSelect = document.getElementById('issueBook');
-    memberSelect.innerHTML = '<option value="">Select a Member</option>';
-    bookSelect.innerHTML = '<option value="">Select a Book</option>';
-
-    members.forEach(member => {
-        const option = document.createElement('option');
-        option.textContent = member.name;
-        memberSelect.appendChild(option);
-    });
-
-    books.forEach(book => {
-        const option = document.createElement('option');
-        option.textContent = book.title;
-        bookSelect.appendChild(option);
-    });
-}
+// Load books, members, and issued books on page load
+window.onload = function() {
+    loadBooks();
+    loadMembers();
+    loadIssuedBooks();
+};
